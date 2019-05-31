@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
+	<!-- 开启注解配置 -->
+	<context:annotation-config />
+	<!-- 指定扫描包 -->
+	<context:component-scan base-package="com.newroad" />
+
+	<!-- 方法1: DispatcherServlet 的url设置为 <url-pattern>/</url-pattern> 他会拦截所有的请求 
+		而js,jsp html 也会被拦截 这时我们可以设置mvc:default-servlet-handler -->
+	<!-- <mvc:default-servlet-handler/> -->
+
+	<!-- 方法2: springmvc 自带方式的处理 location:为静态资源的路径 mapper:配置映射路径，所有的前端页面在引入静态文件时，均应使用映射路径 -->
+	<!-- <mvc:resources location="/static/" mapping="/static/**" /> -->
+	<mvc:default-servlet-handler />
+
+	<!-- 在SpringMVC配置文件中加入视图解析器配置信息 prefix指定视图资源的前缀 suffix指定视图资源的后缀 -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+
+	<!-- 配置转换器工厂 -->
+	<mvc:annotation-driven conversion-service="conversionService"
+		validator="validator" />
+	<!-- 将格式话转换器 加入到ioc容器中 -->
+	<bean id="conversionService"
+		class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+
+	</bean>
+	<!-- 配置多部分解析器 id值必须为multipartResolver -->
+
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- 设置默认字符编码 这个字符编码必须和jsp的页面编码一致，以便于能够正确的解析表单的文本数据 -->
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>
+
+
+	<!-- 配置数据校验器 -->
+	<bean id="validator"
+		class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+		<!-- 配置数据校验实现类 -->
+		<property name="providerClass" value="org.hibernate.validator.HibernateValidator" />
+		<!-- 这里的property文件要和国际化资源信息文件 id 属性名同名 -->
+		<property name="validationMessageSource" ref="messageSouce"></property>
+	</bean>
+	<!-- 配置国际化资源信息 -->
+	<bean id="messageSouce"
+		class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="basenames">
+
+			<list>
+				<value>classpath:errormessage</value>
+				<value>classpath:org/hibernate/validator/ValidationMessages_zh_CN
+				</value>
+			</list>
+		</property>
+
+	</bean>
+
+	<!-- springmvc 错误处理页面 简单异常处理器 -->
+	<!-- <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver"> 
+		<property name="defaultErrorView" value="jsp/error"/> </bean> -->
+
+	<bean id="exceptionHandler" class="com.newroad.controller.ExectionController">
+	</bean>
+
+   <!-- 配置拦截处理器      -->
+   <mvc:interceptors>
+        <bean class="com.newroad.controller.LogInterceptor">
+       
+        </bean>
+   
+   </mvc:interceptors>
+
+</beans>
